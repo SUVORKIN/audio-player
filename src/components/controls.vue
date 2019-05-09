@@ -16,17 +16,25 @@
       </v-flex>
     </v-layout>
 
-    <v-layout justify-center align-center>
-      <v-btn flat fab>Prev</v-btn>
+    <v-layout class="controls_buttons" justify-center align-center>
+      <v-btn flat fab>
+        <v-icon>fast_rewind</v-icon>
+      </v-btn>
       <v-btn flat fab @click="$emit('play')">
         <v-icon v-if="isPlaying">pause</v-icon>
         <v-icon v-else>play_arrow</v-icon>
       </v-btn>
-      <v-btn flat fab>Next</v-btn>
+      <v-btn flat fab>
+        <v-icon>fast_forward</v-icon>
+      </v-btn>
     </v-layout>
     <v-layout>
       <v-flex class="mx-3">
-        <v-slider v-model="volume" :max="max" :min="min"></v-slider>
+        <v-layout align-center>
+          <v-icon class="mb-1">volume_down</v-icon>
+          <v-slider class="mx-2" v-model="volume" :max="max" :min="min"></v-slider>
+          <v-icon class="mb-1">volume_up</v-icon>
+        </v-layout>
       </v-flex>
     </v-layout>
   </div>
@@ -58,6 +66,10 @@ export default {
 <style>
 .controls_track-name {
   font-weight: bold;
+  font-size: 22px;
+}
+.controls_buttons {
+  font-size: 22px;
 }
 .controls_progress {
   margin-top: 0 !important;

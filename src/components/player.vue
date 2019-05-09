@@ -3,7 +3,7 @@
     <div class="player">
       <v-layout justify-center>
         <v-card flat>
-          <v-flex class="pa-3">
+          <v-flex class="pa-4">
             <v-img
               class="player_track-image"
               width="500px"
@@ -12,6 +12,7 @@
             ></v-img>
           </v-flex>
           <controls :selectedTrack="selectedTrack" @play="play"/>
+          <v-divider></v-divider>
           <playlist :playlist="playlist"/>
         </v-card>
       </v-layout>
@@ -86,6 +87,6 @@ export default {
 <style>
 .player_track-image {
   border-radius: 5px;
-  box-shadow: 0px 12px 20px 0px rgba(61, 61, 61, 0.5);
+  box-shadow: 0px 12px 20px 0px rgba(118, 118, 118, 0.5);
 }
 </style>
