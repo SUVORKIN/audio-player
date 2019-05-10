@@ -1,23 +1,29 @@
 <template>
-  <v-container>
-    <div class="player">
-      <v-layout justify-center>
-        <v-card flat>
-          <v-flex class="pa-4">
-            <v-img
-              class="player_track-image"
-              width="500px"
-              :src="selectedTrack.image"
-              aspect-ratio="1.6"
-            ></v-img>
-          </v-flex>
-          <controls :selectedTrack="selectedTrack" @play="play"/>
-          <v-divider></v-divider>
-          <playlist :playlist="playlist"/>
-        </v-card>
+  <div class="player">
+    <v-card flat>
+      <v-layout justify-center column>
+        <v-flex class="pa-4">
+          <v-img class="player_track-artwork" max-width="500px" :src="selectedTrack.artwork"></v-img>
+        </v-flex>
+        <controls
+          :timePlayed="timePlayed"
+          :isPlaying="isPlaying"
+          :selectedTrack="selectedTrack"
+          @seek="seek"
+          @play="play(selectedTrackIndex)"
+          @nextTrack="changeTrack(selectedTrackIndex + 1)"
+          @prevTrack="changeTrack(selectedTrackIndex - 1)"
+        />
+        <v-divider></v-divider>
+        <playlist
+          :isPlaying="isPlaying"
+          :selectedTrackIndex="selectedTrackIndex"
+          :playlist="playlist"
+          @changeTrack="changeTrack"
+        />
       </v-layout>
-    </div>
-  </v-container>
+    </v-card>
+  </div>
 </template>
 
 <script>
@@ -28,54 +34,99 @@ export default {
   data () {
     return {
       isPlaying: false,
+      selectedTrack: null,
+      timePlayed: 0,
+      selectedTrackAudio: null,
+      selectedTrackIndex: 0,
       playlist: [
         {
-          name: 'Ландыши', artist: 'DJ Someone', src: '/media/Landishy.99963f51.mp3', type: 'audio/mpeg', image: '/img/download.cebeaea9.jpeg'
+          name: 'Honor Him (OST Gladiator)', artist: 'Hanz Zimmer', src: require('@/tracks/gladiator_16 - Honor Him.mp3'), type: 'audio/mpeg', artwork: require('@/tracks/artworks/87380.jpg')
         },
         {
-          name: 'Ландыши2', src: '/media/Landishy.99963f51.mp3', type: 'audio/mpeg', image: ''
+          name: 'Call of Magic (OST TES Morrowind)', artist: 'Jeremy Soule', src: require('@/tracks/call-of-magic-ost-morrowind.mp3'), type: 'audio/mpeg', artwork: require('@/tracks/artworks/Morrowind_ost_cover.jpg')
+        },
+        {
+          name: 'Beverly Hills Cop OST', artist: 'JAxel F - Harold Faltermeyer', src: require('@/tracks/axel-f-ost-beverly-hills-cop.mp3'), type: 'audio/mpeg', artwork: require('@/tracks/artworks/115488103.jpg')
         }
       ]
     }
   },
+  created () {
+    this.selectedTrackAudio = new Audio(this.playlist[0].src)
+    this.selectedTrack = this.playlist[0]
+  },
+  mounted () {
+    for (let i in this.playlist) {
+      let audio = new Audio(this.playlist[i].src)
+      audio.addEventListener('loadedmetadata', () => {
+        this.$set(this.playlist[i], 'duration', audio.duration)
+        this.$set(this.playlist[i], 'durationConverted', this.convertTimeHHMMSS(audio.duration))
+      })
+    }
+    this.selectedTrackAudio.addEventListener('timeupdate', this.updateTime)
+    this.selectedTrackAudio.onended = () => {
+      this.onTrackEnd()
+    }
+  },
   watch: {
-    isPlaying (val) {
-      this.play()
+    volume (val) {
+      this.selectedTrackAudio.volume = val
     }
   },
   computed: {
-    selectedTrack () {
-      return this.playlist[0]
+    volume () {
+      return this.$store.getters.volume
     }
   },
   methods: {
-    play () {
-      var song = new Audio(this.selectedTrack.src)
-      if (this.isPlaying) {
-        song.pause()
-      } else {
-        var playPromise = song.play()
-        if (playPromise !== undefined) {
-          playPromise.then(function () {
-            song.play()
-          }).catch(function (error) {
-            alert(error)
-          })
-        }
+    updateTime () {
+      this.timePlayed = parseInt(this.selectedTrackAudio.currentTime)
+    },
+    seek (timeMark) {
+      this.selectedTrackAudio.currentTime = timeMark
+    },
+    changeTrack (i = 0) {
+      if (i > this.playlist.length - 1 || i < 0) {
+        i = 0
       }
+      if (this.playlist[i].name === this.selectedTrack.name) {
+        this.selectedTrackAudio.pause()
+      } else {
+        this.timePlayed = 0
+        this.selectedTrackAudio.pause()
+        this.isPlaying = !this.isPlaying
+      }
+      this.play(i)
+    },
+    play (i = 0) {
+      if (!this.isPlaying) {
+        this.isPlaying = true
+        this.selectedTrackIndex = i
+        this.selectedTrack = this.playlist[i]
+        this.selectedTrackAudio = new Audio(this.playlist[i].src)
+        this.selectedTrackAudio.volume = this.volume
+        this.selectedTrackAudio.currentTime = this.timePlayed
+        this.selectedTrackAudio.play()
+        this.selectedTrackAudio.addEventListener('timeupdate', this.updateTime)
+        this.selectedTrackAudio.onended = () => {
+          this.onTrackEnd()
+        }
+      } else {
+        this.isPlaying = false
+        this.selectedTrackAudio.pause()
+      }
+    },
+    onTrackEnd () {
+      if (this.selectedTrackIndex >= this.playlist.length - 1) {
+        this.changeTrack()
+      } else {
+        this.changeTrack(this.selectedTrackIndex + 1)
+      }
+    },
+    convertTimeHHMMSS (val) {
+      let hhmmss = new Date(val * 1000).toISOString().substr(11, 8)
+      return hhmmss.indexOf('00:') === 0 ? hhmmss.substr(3) : hhmmss
     }
-    // pause () {
-    //   debugger
-    //   var song = new Audio('http://localhost:8080/media/Landishy.99963f51.mp3')
-    //   song.pause()
-    //   // if (playPromise !== undefined) {
-    //   //   playPromise.then(function () {
-    //   //     song.pause()
-    //   //   }).catch(function (error) {
-    //   //     alert(error)
-    //   //   })
-    //   // }
-    // }
   },
   components: {
     playlist,
@@ -85,7 +136,8 @@ export default {
 </script>
 
 <style>
-.player_track-image {
+.player_track-artwork {
+  margin: auto;
   border-radius: 5px;
   box-shadow: 0px 12px 20px 0px rgba(118, 118, 118, 0.5);
 }

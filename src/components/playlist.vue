@@ -1,13 +1,25 @@
 <template>
   <div class="playlist text-xs-left">
-    <v-card class="mx-3" flat v-for="(track, index) in playlist" :key="track.id">
-      <v-card-text>
+    <v-card
+      class="playlist_item"
+      :class="{'active': index == selectedTrackIndex}"
+      flat
+      v-for="(track, index) in playlist"
+      :key="track.id"
+    >
+      <v-card-text class="px-2">
         <v-layout align-center>
-          <span class="mr-3">{{index}}</span>
-          <v-flex>
+          <span class="mr-2">
+            <v-img class="player_track-artwork" width="50px" :src="track.artwork"></v-img>
+          </span>
+          <v-flex @click="$emit('changeTrack', index)">
             <div>{{track.name}}</div>
-            <div>{{track.artist}}</div>
+            <div class="caption">{{track.artist}}</div>
           </v-flex>
+          <v-flex xs1>
+            <v-icon color="red" v-if="isPlaying && selectedTrackIndex == index">play_arrow</v-icon>
+          </v-flex>
+          <v-flex class="caption" xs1>{{track.durationConverted}}</v-flex>
         </v-layout>
       </v-card-text>
       <v-divider></v-divider>
@@ -19,7 +31,18 @@
 export default {
   name: 'playlist',
   props: {
-    playlist: Array
+    playlist: Array,
+    selectedTrackIndex: Number,
+    isPlaying: Boolean
   }
 }
 </script>
+
+<style>
+.playlist_item {
+  cursor: pointer;
+}
+.active {
+  background-color: rgb(255, 230, 230) !important;
+}
+</style>
