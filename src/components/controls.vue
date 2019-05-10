@@ -62,7 +62,7 @@ export default {
       time: 0,
       start: 0,
       end: 100,
-      volume: 100,
+      volume: 50,
       max: 100,
       min: 0
     }

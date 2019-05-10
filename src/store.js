@@ -5,7 +5,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    volume: 0.3
+    volume: 0.5
   },
   mutations: {
     set (state, { type, val }) {

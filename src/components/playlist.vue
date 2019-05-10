@@ -8,7 +8,7 @@
       :key="track.id"
       @click="$emit('changeTrack', index)"
     >
-      <v-card-text class="px-2">
+      <v-card-text class="px-3">
         <v-layout align-center>
           <span class="mr-2">
             <v-img class="player_track-artwork" width="50px" :src="track.artwork"></v-img>
@@ -20,7 +20,7 @@
           <v-flex xs1>
             <v-icon color="red" v-if="isPlaying && selectedTrackIndex == index">play_arrow</v-icon>
           </v-flex>
-          <v-flex class="caption" xs1>{{track.durationConverted}}</v-flex>
+          <v-flex class="caption text-xs-right" xs1>{{track.durationConverted}}</v-flex>
         </v-layout>
       </v-card-text>
       <v-divider></v-divider>

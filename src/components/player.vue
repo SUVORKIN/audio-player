@@ -1,28 +1,39 @@
 <template>
   <div class="player">
-    <v-card flat>
-      <v-layout justify-center column>
-        <v-flex class="pa-4">
-          <v-img class="player_track-artwork" max-width="500px" :src="selectedTrack.artwork"></v-img>
-        </v-flex>
-        <controls
-          :timePlayed="timePlayed"
-          :isPlaying="isPlaying"
-          :selectedTrack="selectedTrack"
-          @seek="seek"
-          @play="play(selectedTrackIndex)"
-          @nextTrack="changeTrack(selectedTrackIndex + 1)"
-          @prevTrack="changeTrack(selectedTrackIndex - 1)"
-        />
-        <v-divider></v-divider>
-        <playlist
-          :isPlaying="isPlaying"
-          :selectedTrackIndex="selectedTrackIndex"
-          :playlist="playlist"
-          @changeTrack="changeTrack"
-        />
-      </v-layout>
-    </v-card>
+    <v-container>
+      <v-card flat>
+        <v-layout justify-center align-canter wrap>
+          <v-flex lg3 sm12 xs12 class="pa-4">
+            <v-img class="player_track-artwork" max-width="400px" :src="selectedTrack.artwork"></v-img>
+          </v-flex>
+          <v-flex xs12 lg9>
+            <controls
+              :timePlayed="timePlayed"
+              :isPlaying="isPlaying"
+              :selectedTrack="selectedTrack"
+              @seek="seek"
+              @play="play(selectedTrackIndex)"
+              @nextTrack="changeTrack(selectedTrackIndex + 1)"
+              @prevTrack="changeTrack(selectedTrackIndex - 1)"
+            />
+          </v-flex>
+          <v-divider></v-divider>
+          <v-flex lg12 xs12>
+            <div class="my-2">
+              <v-text-field color="grey" box v-model="query" hide-details label="Type name"></v-text-field>
+              <div>{{filterMsg}}</div>
+            </div>
+
+            <playlist
+              :isPlaying="isPlaying"
+              :selectedTrackIndex="selectedTrackIndex"
+              :playlist="playlistFiltered"
+              @changeTrack="changeTrack"
+            />
+          </v-flex>
+        </v-layout>
+      </v-card>
+    </v-container>
   </div>
 </template>
 
@@ -48,7 +59,10 @@ export default {
         {
           name: 'Beverly Hills Cop OST', artist: 'JAxel F - Harold Faltermeyer', src: require('@/tracks/axel-f-ost-beverly-hills-cop.mp3'), type: 'audio/mpeg', artwork: require('@/tracks/artworks/115488103.jpg')
         }
-      ]
+      ],
+      filterMsg: '',
+      query: '',
+      matchedTracks: []
     }
   },
   created () {
@@ -71,11 +85,17 @@ export default {
   watch: {
     volume (val) {
       this.selectedTrackAudio.volume = val
+    },
+    query (val) {
+      this.filter(val)
     }
   },
   computed: {
     volume () {
       return this.$store.getters.volume
+    },
+    playlistFiltered () {
+      return this.query ? this.matchedTracks : this.playlist
     }
   },
   methods: {
@@ -86,25 +106,25 @@ export default {
       this.selectedTrackAudio.currentTime = timeMark
     },
     changeTrack (i = 0) {
-      if (i > this.playlist.length - 1 || i < 0) {
+      if (i > this.playlistFiltered.length - 1 || i < 0) {
         i = 0
       }
-      if (this.playlist[i].name === this.selectedTrack.name) {
+      if (this.playlistFiltered[i].name === this.selectedTrack.name) {
         this.selectedTrackAudio.pause()
       } else {
         this.timePlayed = 0
         this.selectedTrackAudio.pause()
         this.isPlaying = false
         this.selectedTrackIndex = i
-        this.selectedTrack = this.playlist[i]
+        this.selectedTrack = this.playlistFiltered[i]
       }
       this.play(i)
     },
     play (i = 0) {
       if (!this.isPlaying) {
         this.isPlaying = true
-        this.selectedTrack = this.playlist[i]
-        this.selectedTrackAudio = new Audio(this.playlist[i].src)
+        this.selectedTrack = this.playlistFiltered[i]
+        this.selectedTrackAudio = new Audio(this.playlistFiltered[i].src)
         this.selectedTrackAudio.volume = this.volume
         this.selectedTrackAudio.currentTime = this.timePlayed
         this.selectedTrackAudio.play()
@@ -118,7 +138,7 @@ export default {
       }
     },
     onTrackEnd () {
-      if (this.selectedTrackIndex >= this.playlist.length - 1) {
+      if (this.selectedTrackIndex >= this.playlistFiltered.length - 1) {
         this.changeTrack()
       } else {
         this.changeTrack(this.selectedTrackIndex + 1)
@@ -127,6 +147,15 @@ export default {
     convertTimeHHMMSS (val) {
       let hhmmss = new Date(val * 1000).toISOString().substr(11, 8)
       return hhmmss.indexOf('00:') === 0 ? hhmmss.substr(3) : hhmmss
+    },
+    filter (string) {
+      const matched = this.playlist.filter(item => item.name.toLowerCase().indexOf(string.toLowerCase()) > -1)
+      if (!matched.length) {
+        this.filterMsg = 'There are no matches'
+      } else {
+        this.filterMsg = ''
+      }
+      this.matchedTracks = matched
     }
   },
   components: {
