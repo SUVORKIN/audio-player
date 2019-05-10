@@ -6,13 +6,14 @@
       flat
       v-for="(track, index) in playlist"
       :key="track.id"
+      @click="$emit('changeTrack', index)"
     >
       <v-card-text class="px-2">
         <v-layout align-center>
           <span class="mr-2">
             <v-img class="player_track-artwork" width="50px" :src="track.artwork"></v-img>
           </span>
-          <v-flex @click="$emit('changeTrack', index)">
+          <v-flex>
             <div>{{track.name}}</div>
             <div class="caption">{{track.artist}}</div>
           </v-flex>

@@ -94,14 +94,15 @@ export default {
       } else {
         this.timePlayed = 0
         this.selectedTrackAudio.pause()
-        this.isPlaying = !this.isPlaying
+        this.isPlaying = false
+        this.selectedTrackIndex = i
+        this.selectedTrack = this.playlist[i]
       }
       this.play(i)
     },
     play (i = 0) {
       if (!this.isPlaying) {
         this.isPlaying = true
-        this.selectedTrackIndex = i
         this.selectedTrack = this.playlist[i]
         this.selectedTrackAudio = new Audio(this.playlist[i].src)
         this.selectedTrackAudio.volume = this.volume
