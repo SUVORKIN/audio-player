@@ -11,6 +11,7 @@
               :timePlayed="timePlayed"
               :isPlaying="isPlaying"
               :selectedTrack="selectedTrack"
+              @volumeChange="changeVolume"
               @seek="seek"
               @play="play(selectedTrackIndex)"
               @nextTrack="changeTrack(selectedTrackIndex + 1)"
@@ -27,6 +28,7 @@
             <playlist
               :isPlaying="isPlaying"
               :selectedTrackIndex="selectedTrackIndex"
+              :selectedTrack="selectedTrack"
               :playlist="playlistFiltered"
               @changeTrack="changeTrack"
             />
@@ -84,7 +86,7 @@ export default {
   },
   watch: {
     volume (val) {
-      this.selectedTrackAudio.volume = val
+      this.changeVolume(val)
     },
     query (val) {
       this.filter(val)
@@ -99,6 +101,9 @@ export default {
     }
   },
   methods: {
+    changeVolume (val) {
+      this.selectedTrackAudio.volume = val
+    },
     updateTime () {
       this.timePlayed = parseInt(this.selectedTrackAudio.currentTime)
     },
